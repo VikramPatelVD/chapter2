@@ -1,38 +1,49 @@
 name: Build and Deploy
+
 on:
-push:
-branches: [main]
+  push:
+    branches: [main]
+
 jobs:
-build-and-deploy:
-runs-on: ubuntu-latest
-steps:
-- name: Checkout code
-uses: actions/checkout@v3
-- name: Setup Node.js
-uses: actions/setup-node@v3
-with:
-node-version: '20'
-- name: Setup .NET
-uses: actions/setup-dotnet@v3
-with:
-dotnet-version: '10.0.x'
-- name: Install React dependencies
-working-directory: frontend
-run: npm install
-- name: Build React app
-working-directory: frontend
-run: npm run build
-- name: Copy React build into Backend wwwroot
-run: |
-mkdir -p Backend/wwwroot
-cp -r frontend/build/* Backend/wwwroot/
-- name: Publish .NET Backend
-run: dotnet publish Backend/Backend.csproj -c Release -o ./publish
-- name: Deploy via FTP to Plesk
-uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-with:
-server: ${{ secrets.FTP_HOST }}
-username: ${{ secrets.FTP_USER }}
-password: ${{ secrets.FTP_PASS }}
-local-dir: ./publish/
-server-dir: /cc.combinedcourier.com/
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        [cite_start]uses: actions/checkout@v3 [cite: 72]
+
+      - name: Setup Node.js
+        [cite_start]uses: actions/setup-node@v3 [cite: 74]
+        with:
+          [cite_start]node-version: '20' [cite: 76]
+
+      - name: Setup .NET
+        [cite_start]uses: actions/setup-dotnet@v3 [cite: 78]
+        with:
+          [cite_start]dotnet-version: '10.0.x' [cite: 80]
+
+      - name: Install React dependencies
+        [cite_start]working-directory: frontend [cite: 82]
+        [cite_start]run: npm install [cite: 83]
+
+      - name: Build React app
+        [cite_start]working-directory: frontend [cite: 85]
+        [cite_start]run: npm run build [cite: 86]
+
+      - name: Copy React build into Backend wwwroot
+        run: |
+          mkdir -p Backend/wwwroot [cite: 89]
+          cp -r frontend/build/* Backend/wwwroot/ [cite: 90]
+
+      - name: Publish .NET Backend (Self-Contained)
+        # This bundles the .NET 10 engine so Plesk doesn't need it [cite: 155]
+        run: dotnet publish Backend/Backend.csproj -c Release -r win-x64 --self-contained true -o ./publish
+
+      - name: Deploy via FTP to Plesk
+        [cite_start]uses: SamKirkland/FTP-Deploy-Action@v4.3.4 [cite: 94]
+        with:
+          [cite_start]server: ${{ secrets.FTP_HOST }} [cite: 95]
+          [cite_start]username: ${{ secrets.FTP_USER }} [cite: 95]
+          [cite_start]password: ${{ secrets.FTP_PASS }} [cite: 96]
+          [cite_start]local-dir: ./publish/ [cite: 96]
+          [cite_start]server-dir: /cc.combinedcourier.com/ [cite: 97]
